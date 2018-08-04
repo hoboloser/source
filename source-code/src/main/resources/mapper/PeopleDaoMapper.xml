@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper  
+    PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"  
+    "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+ <mapper namespace="com.binh.source.code.dao.mapper.PeopleDaoMapper">
+    
+    <cache eviction="FIFO" flushInterval="60000" size="512" readOnly="false"/>
+    
+    <resultMap type="People" id="peopleMap">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="age" column="age" jdbcType="BIGINT"/>
+    </resultMap>
+        
+    
+    
+    <select id="listPeople" parameterType="HashMap" resultMap="peopleMap">
+        select * from people;
+    </select>
+    
+    <select id="listPeoples" parameterType="HashMap" resultMap="peopleMap" flushCache="false" useCache="true">
+        select * from people;
+    </select>
+    
+     <select id="getPeopleById" resultMap="peopleMap">
+        select * from people where id=#{id};
+    </select>
+    
+    <insert id="insert" parameterType="People" useGeneratedKeys="true" keyProperty="id">
+        insert into people(name,age) values(#{name},#{age});
+    </insert>
+    
+    <update id="update">
+        update people set name=#{name},age=#{age} where id=#{id};
+    </update>
+ </mapper>
