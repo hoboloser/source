@@ -17,8 +17,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.collections.ListUtils;
-import org.apache.commons.lang.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -222,7 +220,7 @@ public class CacheAPI {
     public void getWithRefresh(String key) {
         if (isForceUpdate) {
             Cache<String, Object> localCache = LocalCache.instance(key);
-            CacheLoader<K, V>
+//            CacheLoader<K, V>
         }
     }
     

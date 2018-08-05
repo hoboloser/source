@@ -12,7 +12,7 @@ package com.binh.source.code.cache.api;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import jersey.repackaged.com.google.common.collect.Maps;
+import com.google.common.collect.Maps;
 
 /**
  * @ClassName @{link ReloadCache}
