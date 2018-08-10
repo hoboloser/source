@@ -10,6 +10,7 @@
 package com.binh.source.code.cache.http.support;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import com.google.common.collect.Lists;
 
@@ -31,5 +32,14 @@ public class DBService {
     public static List<String> getData(List<Long> ids) {
         
         return Lists.newArrayList("1","2","3");
+    }
+    
+    public static String getData(String name) {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+             e.printStackTrace();
+        }
+        return "data : " + name;
     }
 }

@@ -12,6 +12,8 @@ package com.binh.source.code.cache.http.web;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.AsyncListener;
@@ -20,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSON;
 
@@ -35,6 +38,7 @@ import com.alibaba.fastjson.JSON;
  * @author binh
  * @date 2018/08/05
  */
+@Component("asyncWeb")
 public class AsyncWeb {
     
     private Logger logger = LoggerFactory.getLogger(AsyncWeb.class);
@@ -43,9 +47,11 @@ public class AsyncWeb {
     
     private AsyncListener asyncListener = null;
     
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    public void submit(final HttpServletRequest req, final Callable<CompletableFuture> task) throws Exception {
-        
+    private ExecutorService excutor = Executors.newWorkStealingPool();
+    
+    public void process(final HttpServletRequest req, final Callable<CompletableFuture> task) {
+        logger.info("AsyncWeb.submit");
+        req.setAttribute("org.apache.catalina.ASYNC_SUPPORTED", true);
         final String uri = req.getRequestURI();
         final Map params = req.getParameterMap();
         final AsyncContext asyncContext = req.startAsync();
@@ -56,11 +62,40 @@ public class AsyncWeb {
         if (asyncListener != null) {
             asyncContext.addListener(asyncListener);
         }
+        excutor.execute(() -> {
+            CompletableFuture future = null;
+            try {
+                future = task.call();
+            } catch (Exception e1) {
+                 e1.printStackTrace();
+            }
+        });
+    }
+    
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public void submit(final HttpServletRequest req, final Callable<CompletableFuture> task) throws Exception {
+        logger.info("AsyncWeb.submit");
+        req.setAttribute("org.apache.catalina.ASYNC_SUPPORTED", true);
+        final String uri = req.getRequestURI();
+        final Map params = req.getParameterMap();
+        final AsyncContext asyncContext = req.startAsync();
+        asyncContext.getRequest().setAttribute("uri", uri);
+        asyncContext.getRequest().setAttribute("params", params);
+        asyncContext.setTimeout(asyncTimeoutInSeconds * 1000);
         
-        CompletableFuture future = task.call();
-        
-        future.thenAccept(t -> {
-                HttpServletResponse resp = (HttpServletResponse)asyncContext.getResponse();
+        if (asyncListener != null) {
+            asyncContext.addListener(asyncListener);
+        }
+        excutor.execute(() -> {
+            CompletableFuture future = null;
+            try {
+                future = task.call();
+            } catch (Exception e1) {
+                 e1.printStackTrace();
+            }
+            
+            future.thenAccept(t -> {
+                HttpServletResponse resp = (HttpServletResponse) asyncContext.getResponse();
                 try {
                     if (t instanceof String) {
                         byte[] bytes = ((String)t).getBytes();
@@ -84,6 +119,6 @@ public class AsyncWeb {
                 asyncContext.complete();
                 return null;
             });
-        
+        });
     }
 }
