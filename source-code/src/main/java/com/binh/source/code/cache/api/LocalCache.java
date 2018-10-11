@@ -221,4 +221,7 @@ public class LocalCache {
     public static void refresh(String key) {
 //        cache.get(key, )
     }
+    public static void main(String[] args) {
+        System.out.println(instanceRefresh("123").getIfPresent("1234"));
+    }
 }
